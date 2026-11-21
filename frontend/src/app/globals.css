@@ -3,31 +3,43 @@
 @tailwind utilities;
 
 :root {
-  --green:  #16a34a;
-  --blue:   #1d4ed8;
-  --yellow: #ca8a04;
+  /* Brand green — unchanged from the original palette */
+  --green-50:  #f0fdf4;
+  --green-100: #dcfce7;
+  --green-600: #16803d;
+  --green-700: #15803d;
+  --green-800: #0f5c2c;
+  --green-900: #0b3d1e;
+
+  /* Warm neutral base instead of flat slate-gray */
+  --paper:   #faf9f5;
+  --surface: #ffffff;
+  --ink:     #1c2320;
+  --ink-60:  #52605a;
+  --ink-40:  #8b968f;
+  --line:    #e7e4db;
+
+  /* One sparing accent — bursaries / highlights only */
+  --amber-600: #b45309;
+  --amber-50:  #fef7ed;
+
+  --font-display: var(--font-sora), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
 }
 
 * { box-sizing: border-box; }
-
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, .font-display { 
+    font-family: var(--font-display); 
 }
 
-.btn-primary {
-  @apply bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.btn-secondary {
-  @apply bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 font-medium py-2.5 px-6 rounded-xl transition-all duration-200;
-}
-
-.input-field {
-  @apply w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white;
-}
-
-.card {
-  @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6;
-}
+.btn-primary { @apply bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-150; }
+.btn-secondary { @apply bg-white border border-[#e7e4db] hover:bg-[#faf9f5] text-[#1c2320] font-medium py-3 px-6 rounded-xl transition-colors duration-150; }
+.input-field { @apply w-full border border-[#e7e4db] rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-green-700/30 focus:border-green-700 bg-white transition-shadow; }
+.card { @apply bg-white rounded-2xl border border-[#f1efe7] p-6; }

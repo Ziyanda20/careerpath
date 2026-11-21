@@ -1,4 +1,41 @@
+import re
 from database import courses_col
+
+# Subject names reach us in different spellings: the report-card reader gives
+# "Physical Sciences", the progress-page picker gives
+# "Physical Sciences (Physics and Chemistry)", course data uses lowercase.
+# Everything is compared in one normalised form so they all match.
+_SUBJECT_ALIASES = {
+    "maths": "mathematics", "math": "mathematics",
+    "physical science": "physical sciences", "life science": "life sciences",
+    "english hl": "english home language", "english fal": "english first additional language",
+    "english 1st additional language": "english first additional language",
+    "lo": "life orientation",
+}
+
+
+def normalise_subject(name: str) -> str:
+    n = re.sub(r"\(.*?\)", " ", str(name).lower())      # drop "(Physics and Chemistry)", "(IT)"
+    n = re.sub(r"[^a-z0-9 ]", " ", n)
+    n = re.sub(r"\s+", " ", n).strip()
+    return _SUBJECT_ALIASES.get(n, n)
+
+
+def build_subject_lookup(subjects: dict) -> dict:
+    """{normalised name: (name as stored, mark)}"""
+    return {normalise_subject(k): (k, float(v)) for k, v in (subjects or {}).items()}
+
+
+def find_subject_mark(lookup: dict, alt_names):
+    """Best (stored_name, mark) among acceptable alternatives, or (None, None)."""
+    alt_names = [alt_names] if isinstance(alt_names, str) else alt_names
+    best = (None, None)
+    for name in alt_names:
+        hit = lookup.get(normalise_subject(name))
+        if hit and (best[1] is None or hit[1] > best[1]):
+            best = hit
+    return best
+
 
 
 def mark_to_points(mark: float) -> int:
@@ -19,14 +56,14 @@ def calculate_aps(subjects: dict) -> dict:
     Life Orientation is excluded from APS (capped at 6 subjects for some unis,
     but we calculate the full sum here and let the matching handle per-uni rules).
     """
-    lo_keys = {"life orientation", "lo"}
+    lo_keys = {"life orientation"}
     points = {}
     total  = 0
 
     for subject, mark in subjects.items():
         pts = mark_to_points(float(mark))
         points[subject] = pts
-        if subject.lower().strip() not in lo_keys:
+        if normalise_subject(subject) not in lo_keys:
             total += pts
 
     return {"aps_score": total, "subject_points": points}
@@ -54,16 +91,20 @@ def get_qualifying_courses(aps_score: int, subjects: dict = None, filters: dict 
 
     # Check compulsory subject requirements if marks provided
     if subjects:
-        subject_lower = {k.lower(): v for k, v in subjects.items()}
+        lookup = build_subject_lookup(subjects)
         filtered = []
         for c in courses:
             reqs = c.get("compulsory_subjects", [])
             passes = True
             for req in reqs:
-                subj_name = req.get("subject", "").lower()
-                min_mark  = req.get("min_mark", 0)
-                learner_mark = subject_lower.get(subj_name)
-                if learner_mark is not None and learner_mark < min_mark:
+                # A requirement's subject can be a single name, or a list of
+                # acceptable alternatives (e.g. English Home Language OR
+                # English First Additional Language) - either satisfies it.
+                min_mark = req.get("min_mark", 0)
+                _, mark = find_subject_mark(lookup, req.get("subject", ""))
+                # Missing every alternative entirely also fails the requirement -
+                # not just having it below the required mark.
+                if mark is None or mark < min_mark:
                     passes = False
                     break
             if passes:

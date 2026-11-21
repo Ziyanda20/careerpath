@@ -37,23 +37,27 @@ async def upload_report(
 
     # Store in DB
     doc = {
-        "_id":               uid,
-        "user_id":           str(current_user["_id"]),
-        "filename":          file.filename,
-        "detected_subjects": result["detected_subjects"],
-        "confidence":        result["confidence"],
-        "needs_review":      result["needs_review"],
-        "uploaded_at":       datetime.utcnow(),
+        "_id":                uid,
+        "user_id":            str(current_user["_id"]),
+        "filename":           file.filename,
+        "detected_subjects":  result["detected_subjects"],
+        "terms":              result["terms"],
+        "subject_confidence": result["subject_confidence"],
+        "confidence":         result["confidence"],
+        "needs_review":       result["needs_review"],
+        "uploaded_at":        datetime.utcnow(),
     }
     uploads_col.insert_one(doc)
 
     return {
-        "upload_id":         uid,
-        "detected_subjects": result["detected_subjects"],
-        "confidence":        result["confidence"],
-        "needs_review":      result["needs_review"],
-        "message":           "Report card processed successfully" if not result["needs_review"]
-                             else "Some subjects may not have been detected correctly. Please review and correct if needed."
+        "upload_id":          uid,
+        "detected_subjects":  result["detected_subjects"],
+        "terms":              result["terms"],
+        "subject_confidence": result["subject_confidence"],
+        "confidence":         result["confidence"],
+        "needs_review":       result["needs_review"],
+        "message":            "Report card processed successfully" if not result["needs_review"]
+                              else "Some subjects may not have been detected correctly. Please review and correct if needed."
     }
 
 

@@ -37,7 +37,8 @@ def get_history(current_user=Depends(get_current_user)):
     docs = list(chat_col.find(
         {"user_id": str(current_user["_id"])},
         {"role": 1, "content": 1, "timestamp": 1, "_id": 0}
-    ).sort("timestamp", 1).limit(50))
+    ).sort("timestamp", -1).limit(50))
+    docs.reverse()  # newest 50 messages, oldest first
     for d in docs:
         d["timestamp"] = d["timestamp"].isoformat()
     return {"history": docs}
