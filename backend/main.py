@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import create_indexes
@@ -10,13 +11,18 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Read allowed origins from env var, fallback to localhost for local dev
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ... rest of your file unchanged
 
 app.include_router(auth.router)
 app.include_router(aps.router)
