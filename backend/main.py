@@ -11,18 +11,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Read allowed origins from env var, fallback to localhost for local dev
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[o.strip() for o in os.getenv("CORS_ORIGINS","http://localhost:3000").split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# ... rest of your file unchanged
 
 app.include_router(auth.router)
 app.include_router(aps.router)
